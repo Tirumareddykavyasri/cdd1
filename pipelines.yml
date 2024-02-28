@@ -1,62 +1,49 @@
-# Python package
-# Create and test a Python package on multiple Python versions.
-# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-#For Python Pipeline change the code from 3rd line
-
-
-trigger:
-
-- master
-
-
-pool:
-
-
-  vmImage: 'ubuntu-latest'
-
-
-strategy:
-
-
-  matrix:
-
-
-    Python27:
-
-
-      python.version: '2.7'
-
-
-
-steps:
-
-
-- task: UsePythonVersion@0
-
-
-  inputs:
-
-
-    versionSpec: '$(python.version)'
-
-
-  displayName: 'Use Python $(python.version)'
-
-
-- script: python "add.py"
-
-
-
-- task: PythonScript@0
-
-
-  inputs:
-
-
-    scriptSource: 'inline'
-
-
-    script: |
-      print('AZURE PIPELINE')
-      print('CONTINUOUS INTEGRATION & CONTINUOUS DEPLOYMENT')
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout your source code from version control
+                git 'https://github.com/tirumareddykavyasri/cdd1.git'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                // Compile your code
+                sh 'mvn clean compile'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                // Run your unit tests
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    // Archive test results
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                // Deploy your application (optional)
+                // sh 'mvn deploy'
+            }
+        }
+    }
+    
+    // Define global post-build actions (optional)
+    post {
+        success {
+            echo 'Build successful! Yay!'
+        }
+        failure {
+            echo 'Build failed. Please check the logs!'
+        }
+    }
+}
